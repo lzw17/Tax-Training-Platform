@@ -13,11 +13,19 @@ DB_NAME=${DB_NAME:-tax_training_platform}
 # 检查MySQL是否可用
 if ! command -v mysql &> /dev/null; then
     echo "❌ 错误: 未安装MySQL客户端"
+    echo "请先安装MySQL: sudo apt-get install mysql-client"
+    exit 1
+fi
+
+# 检查MySQL服务是否运行
+if ! mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" --silent 2>/dev/null; then
+    echo "❌ 错误: MySQL服务未运行或无法连接到 $DB_HOST:$DB_PORT"
+    echo "请启动MySQL服务: sudo systemctl start mysql"
     exit 1
 fi
 
 # 提示输入密码
-echo "请输入MySQL root密码:"
+echo "请输入MySQL root密码 (如果没有密码请直接按回车):"
 read -s DB_PASSWORD
 
 # 测试数据库连接

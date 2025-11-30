@@ -200,6 +200,13 @@ export interface LoginRequest {
   password: string;
 }
 
+// 登录响应
+export interface LoginResponse {
+  user: User;
+  token: string;
+  expires_in: number;
+}
+
 // 注册请求
 export interface RegisterRequest {
   username: string;
