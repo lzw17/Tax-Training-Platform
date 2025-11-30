@@ -1,0 +1,50 @@
+# Node dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+frontend/build/
+frontend/dist/
+backend/dist/
+backend/build/
+
+# Coverage
+coverage/
+*.lcov
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env files
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# npm/yarn cache
+.npm/
+.yarn/
+
+# Misc
+*.tgz
+*.zip
+*.tar
