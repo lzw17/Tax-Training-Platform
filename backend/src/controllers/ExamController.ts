@@ -51,15 +51,17 @@ export class ExamController {
     const countRows = await executeQuery<{ total: number }>(countSql, params);
     const total = countRows[0]?.total ?? 0;
 
+    const limitNum = Number(pageSize) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT e.*
       FROM exams e
       ${whereClause}
       ORDER BY e.${sort as string} ${(String(order) || 'desc').toUpperCase()}
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
 
-    const items = await executeQuery<Exam>(dataSql, [...params, pageSize, offset]);
+    const items = await executeQuery<Exam>(dataSql, params);
 
     const response: ApiResponse<PaginatedResponse<Exam>> = {
       success: true,

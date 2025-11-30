@@ -142,15 +142,18 @@ export class UserService {
     const total = countResult[0]?.total ?? 0;
 
     // 获取数据
+    // 注意：MySQL2 的 execute 方法对 LIMIT/OFFSET 参数支持有问题，所以直接拼接
+    const limitNum = Number(limit) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT id, username, email, real_name, role, status, avatar, phone, created_at, updated_at
       FROM users 
       ${whereClause}
       ORDER BY ${sort} ${order.toUpperCase()}
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
     
-    const items = await executeQuery<User>(dataSql, [...queryParams, limit, offset]);
+    const items = await executeQuery<User>(dataSql, queryParams);
 
     return {
       items,
@@ -190,6 +193,8 @@ export class UserService {
     const total = countResult[0]?.total ?? 0;
 
     // 获取数据
+    const limitNum = Number(limit) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT u.id, u.username, u.email, u.real_name, u.role, u.status, u.avatar, u.phone, 
              u.created_at, u.updated_at, s.student_id, s.class_id, s.grade, s.major
@@ -197,10 +202,10 @@ export class UserService {
       LEFT JOIN students s ON u.id = s.user_id 
       ${whereClause}
       ORDER BY u.${sort} ${order.toUpperCase()}
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
     
-    const items = await executeQuery<User>(dataSql, [...queryParams, limit, offset]);
+    const items = await executeQuery<User>(dataSql, queryParams);
 
     return {
       items,

@@ -134,6 +134,8 @@ export class CourseService {
     const total = countResult[0]?.total || 0;
 
     // 获取数据
+    const limitNum = Number(limit) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT c.*, u.real_name as teacher_name,
              (SELECT COUNT(*) FROM course_students cs WHERE cs.course_id = c.id) as student_count
@@ -141,10 +143,10 @@ export class CourseService {
       LEFT JOIN users u ON c.teacher_id = u.id 
       ${whereClause}
       ORDER BY c.${sort} ${order.toUpperCase()}
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
     
-    const items = await executeQuery<Course & { teacher_name: string; student_count: number }>(dataSql, [...queryParams, limit, offset]);
+    const items = await executeQuery<Course & { teacher_name: string; student_count: number }>(dataSql, queryParams);
 
     return {
       items,
@@ -187,6 +189,8 @@ export class CourseService {
     const total = countResult[0]?.total || 0;
 
     // 获取数据
+    const limitNum = Number(limit) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT u.id, u.username, u.real_name, u.email, cs.enrolled_at,
              s.student_id, s.grade, s.major, c.name as class_name
@@ -196,10 +200,10 @@ export class CourseService {
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE cs.course_id = ?
       ORDER BY cs.${sort} ${order.toUpperCase()}
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
     
-    const items = await executeQuery(dataSql, [courseId, limit, offset]);
+    const items = await executeQuery(dataSql, [courseId]);
 
     return {
       items,

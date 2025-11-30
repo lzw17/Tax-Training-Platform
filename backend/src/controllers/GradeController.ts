@@ -35,6 +35,8 @@ export class GradeController {
     const countRows = await executeQuery<{ total: number }>(countSql, params);
     const total = countRows[0]?.total ?? 0;
 
+    const limitNum = Number(pageSize) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT r.*, e.title as exam_title, e.course_id, u.username, u.real_name
       FROM exam_records r
@@ -42,10 +44,10 @@ export class GradeController {
       JOIN users u ON r.student_id = u.id
       ${whereClause}
       ORDER BY r.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
 
-    const items = await executeQuery<any>(dataSql, [...params, pageSize, offset]);
+    const items = await executeQuery<any>(dataSql, params);
 
     const response: ApiResponse<PaginatedResponse<any>> = {
       success: true,

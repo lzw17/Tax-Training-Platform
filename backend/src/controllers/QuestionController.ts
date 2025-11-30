@@ -39,15 +39,17 @@ export class QuestionController {
     const countRows = await executeQuery<{ total: number }>(countSql, params);
     const total = countRows[0]?.total ?? 0;
 
+    const limitNum = Number(pageSize) || 10;
+    const offsetNum = Number(offset) || 0;
     const dataSql = `
       SELECT q.*
       FROM questions q
       ${whereClause}
       ORDER BY q.created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
 
-    const items = await executeQuery<Question>(dataSql, [...params, pageSize, offset]);
+    const items = await executeQuery<Question>(dataSql, params);
 
     const response: ApiResponse<PaginatedResponse<Question>> = {
       success: true,

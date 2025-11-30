@@ -26,6 +26,7 @@ import {
 } from '@ant-design/icons';
 import { User, UserRole, UserStatus, PaginatedResponse } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { userService } from '../services/userService';
 
 const { Option } = Select;
 
@@ -61,7 +62,7 @@ const UserManagement: React.FC = () => {
     active_users: 0,
   });
 
-  // 模拟API调用
+  // 获取用户列表
   const fetchUsers = async (params: {
     page: number;
     limit: number;
@@ -71,75 +72,26 @@ const UserManagement: React.FC = () => {
   }) => {
     setLoading(true);
     try {
-      // 这里应该调用实际的API
-      // const response = await userService.getUsers(params);
-      
-      // 模拟数据
-      const mockUsers: User[] = [
-        {
-          id: 1,
-          username: 'admin',
-          email: 'admin@example.com',
-          real_name: '系统管理员',
-          role: UserRole.ADMIN,
-          status: UserStatus.ACTIVE,
-          phone: '13800138000',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: 2,
-          username: 'teacher01',
-          email: 'teacher01@example.com',
-          real_name: '张老师',
-          role: UserRole.TEACHER,
-          status: UserStatus.ACTIVE,
-          phone: '13800138001',
-          created_at: '2024-01-02T00:00:00Z',
-          updated_at: '2024-01-02T00:00:00Z',
-        },
-        {
-          id: 3,
-          username: 'student01',
-          email: 'student01@example.com',
-          real_name: '李同学',
-          role: UserRole.STUDENT,
-          status: UserStatus.ACTIVE,
-          phone: '13800138002',
-          created_at: '2024-01-03T00:00:00Z',
-          updated_at: '2024-01-03T00:00:00Z',
-        },
-      ];
+      const response = await userService.getUsers(params);
+      const { data } = response.data;
 
-      const filteredUsers = mockUsers.filter(user => {
-        const matchesSearch = !params.search || 
-          user.username.includes(params.search) ||
-          user.real_name.includes(params.search) ||
-          user.email.includes(params.search);
-        const matchesRole = !params.role || user.role === params.role;
-        const matchesStatus = !params.status || user.status === params.status;
-        return matchesSearch && matchesRole && matchesStatus;
-      });
+      if (data) {
+        setUsers(data.items);
+        setPagination(prev => ({
+          ...prev,
+          total: data.total,
+        }));
 
-      const start = (params.page - 1) * params.limit;
-      const end = start + params.limit;
-      const paginatedUsers = filteredUsers.slice(start, end);
-
-      setUsers(paginatedUsers);
-      setPagination(prev => ({
-        ...prev,
-        total: filteredUsers.length,
-      }));
-
-      // 模拟统计数据
-      setStats({
-        total_users: mockUsers.length,
-        total_teachers: mockUsers.filter(u => u.role === UserRole.TEACHER).length,
-        total_students: mockUsers.filter(u => u.role === UserRole.STUDENT).length,
-        active_users: mockUsers.filter(u => u.status === UserStatus.ACTIVE).length,
-      });
-    } catch (error) {
-      message.error('获取用户列表失败');
+        // 计算统计数据
+        setStats({
+          total_users: data.total,
+          total_teachers: data.items.filter(u => u.role === UserRole.TEACHER).length,
+          total_students: data.items.filter(u => u.role === UserRole.STUDENT).length,
+          active_users: data.items.filter(u => u.status === UserStatus.ACTIVE).length,
+        });
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || '获取用户列表失败');
     } finally {
       setLoading(false);
     }
@@ -198,8 +150,7 @@ const UserManagement: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      // 这里应该调用实际的API
-      // await userService.deleteUser(id);
+      await userService.deleteUser(id);
       message.success('删除用户成功');
       fetchUsers({
         page: pagination.current,
@@ -208,8 +159,8 @@ const UserManagement: React.FC = () => {
         role: roleFilter,
         status: statusFilter,
       });
-    } catch (error) {
-      message.error('删除用户失败');
+    } catch (error: any) {
+      message.error(error.response?.data?.message || '删除用户失败');
     }
   };
 
@@ -219,11 +170,11 @@ const UserManagement: React.FC = () => {
       
       if (editingUser) {
         // 更新用户
-        // await userService.updateUser(editingUser.id, values);
+        await userService.updateUser(editingUser.id, values);
         message.success('更新用户成功');
       } else {
         // 创建用户
-        // await userService.createUser(values);
+        await userService.createUser(values);
         message.success('创建用户成功');
       }
       
@@ -235,8 +186,8 @@ const UserManagement: React.FC = () => {
         role: roleFilter,
         status: statusFilter,
       });
-    } catch (error) {
-      message.error(editingUser ? '更新用户失败' : '创建用户失败');
+    } catch (error: any) {
+      message.error(error.response?.data?.message || (editingUser ? '更新用户失败' : '创建用户失败'));
     }
   };
 

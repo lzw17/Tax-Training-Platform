@@ -12,6 +12,13 @@ export enum UserStatus {
   SUSPENDED = 'suspended'
 }
 
+// 课程状态枚举
+export enum CourseStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  ARCHIVED = 'archived'
+}
+
 // 考试状态枚举
 export enum ExamStatus {
   DRAFT = 'draft',
@@ -79,12 +86,15 @@ export interface Class {
 export interface Course {
   id: number;
   name: string;
-  description: string;
-  teacher_id: number;
+  code?: string;
+  description?: string;
+  teacher_id?: number;
   teacher_name?: string;
   cover_image?: string;
-  credit_hours: number;
-  status: 'active' | 'inactive';
+  credit_hours?: number;
+  status: CourseStatus;
+  start_date?: string;
+  end_date?: string;
   student_count?: number;
   created_at: string;
   updated_at: string;
