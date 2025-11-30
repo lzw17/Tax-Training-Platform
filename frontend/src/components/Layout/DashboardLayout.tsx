@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Typography, Space, Button } from 'antd';
 import {
   DashboardOutlined,
@@ -24,13 +24,6 @@ const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-
-  // 检查用户认证状态
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user, navigate]);
 
   const handleLogout = () => {
     logout();

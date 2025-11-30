@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { LoginRequest, RegisterRequest, ApiResponse, User, LoginResponse } from '../types';
 
 // 创建axios实例
@@ -42,48 +42,48 @@ api.interceptors.response.use(
 
 export const authService = {
   // 登录
-  login: (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-    return api.post('/auth/login', credentials);
+  login: (credentials: LoginRequest): Promise<AxiosResponse<ApiResponse<LoginResponse>>> => {
+    return api.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
   },
 
   // 注册
-  register: (userData: RegisterRequest): Promise<ApiResponse<User>> => {
-    return api.post('/auth/register', userData);
+  register: (userData: RegisterRequest): Promise<AxiosResponse<ApiResponse<User>>> => {
+    return api.post<ApiResponse<User>>('/auth/register', userData);
   },
 
   // 登出
-  logout: (): Promise<ApiResponse> => {
-    return api.post('/auth/logout');
+  logout: (): Promise<AxiosResponse<ApiResponse>> => {
+    return api.post<ApiResponse>('/auth/logout');
   },
 
   // 获取用户信息
-  getProfile: (): Promise<ApiResponse<User>> => {
-    return api.get('/users/profile');
+  getProfile: (): Promise<AxiosResponse<ApiResponse<User>>> => {
+    return api.get<ApiResponse<User>>('/users/profile');
   },
 
   // 更新用户信息
-  updateProfile: (userData: Partial<User>): Promise<ApiResponse<User>> => {
-    return api.put('/users/profile', userData);
+  updateProfile: (userData: Partial<User>): Promise<AxiosResponse<ApiResponse<User>>> => {
+    return api.put<ApiResponse<User>>('/users/profile', userData);
   },
 
   // 修改密码
-  changePassword: (data: { oldPassword: string; newPassword: string }): Promise<ApiResponse> => {
-    return api.put('/users/password', data);
+  changePassword: (data: { oldPassword: string; newPassword: string }): Promise<AxiosResponse<ApiResponse>> => {
+    return api.put<ApiResponse>('/users/password', data);
   },
 
   // 忘记密码
-  forgotPassword: (email: string): Promise<ApiResponse> => {
-    return api.post('/auth/forgot-password', { email });
+  forgotPassword: (email: string): Promise<AxiosResponse<ApiResponse>> => {
+    return api.post<ApiResponse>('/auth/forgot-password', { email });
   },
 
   // 重置密码
-  resetPassword: (data: { token: string; password: string }): Promise<ApiResponse> => {
-    return api.post('/auth/reset-password', data);
+  resetPassword: (data: { token: string; password: string }): Promise<AxiosResponse<ApiResponse>> => {
+    return api.post<ApiResponse>('/auth/reset-password', data);
   },
 
   // 刷新token
-  refreshToken: (): Promise<ApiResponse<{ token: string }>> => {
-    return api.post('/auth/refresh');
+  refreshToken: (): Promise<AxiosResponse<ApiResponse<{ token: string }>>> => {
+    return api.post<ApiResponse<{ token: string }>>('/auth/refresh');
   },
 
   // 设置认证token

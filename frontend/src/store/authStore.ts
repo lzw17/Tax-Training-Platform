@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, LoginRequest, LoginResponse } from '../types';
+import { User, LoginRequest } from '../types';
 import { authService } from '../services/authService';
 
 interface AuthState {
@@ -35,7 +35,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           set({ loading: true, error: null });
           
           const response = await authService.login(credentials);
-          const { user, token } = response.data as LoginResponse;
+          // 后端返回的是 ApiResponse<LoginResponse> 结构，这里直接通过 AxiosResponse 泛型拿到 data
+          const { data } = response.data;
+
+          if (!data) {
+            throw new Error('登录响应数据异常');
+          }
+
+          const { user, token } = data;
           
           // 设置token到axios默认headers
           authService.setAuthToken(token);
@@ -98,10 +105,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           // 设置token到axios
           authService.setAuthToken(token);
           
-          // 验证token并获取用户信息
+          // 验证token并获取用户信息（后端同样返回 ApiResponse<User>）
           const response = await authService.getProfile();
-          const user = response.data as User;
-          
+          const { data } = response.data;
+
+          if (!data) {
+            throw new Error('获取用户信息失败');
+          }
+
+          const user = data;
+
           set({
             user,
             isAuthenticated: true,

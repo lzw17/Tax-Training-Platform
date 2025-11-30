@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
@@ -15,9 +15,10 @@ import ExamTaking from './pages/ExamTaking';
 
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  // 只有在已认证且用户信息存在时才允许访问
+  return isAuthenticated && user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 // 公开路由组件（已登录用户重定向到仪表板）
@@ -28,6 +29,17 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const App: React.FC = () => {
+  const { checkAuth, token } = useAuthStore();
+  const hasCheckedAuth = useRef(false);
+
+  // 应用启动时检查认证状态（只执行一次）
+  useEffect(() => {
+    if (token && !hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+      checkAuth();
+    }
+  }, [token, checkAuth]);
+
   return (
     <Routes>
       {/* 公开路由 */}

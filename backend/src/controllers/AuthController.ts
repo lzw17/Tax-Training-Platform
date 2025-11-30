@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { AuthenticatedRequest, LoginRequest, RegisterRequest, User, ApiResponse, LoginResponse } from '../types';
 import { UserService } from '../services/UserService';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
@@ -195,13 +195,17 @@ export class AuthController {
       role: user.role
     };
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
+    const secretEnv = process.env.JWT_SECRET;
+    if (!secretEnv) {
       throw new AppError('JWT密钥未配置', 500);
     }
 
-    return jwt.sign(payload, secret, {
-      expiresIn: process.env.JWT_EXPIRE || '24h'
-    });
+    const secret: Secret = secretEnv as Secret;
+
+    // 支持在 .env 中通过 JWT_EXPIRE 配置，例如 "24h"、"7d" 等
+    const expiresIn = process.env.JWT_EXPIRE || '24h';
+
+    // 这里对 options 做类型断言，避免与不同版本 @types/jsonwebtoken 的类型冲突
+    return jwt.sign(payload, secret, { expiresIn } as any);
   }
 }

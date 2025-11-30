@@ -24,15 +24,17 @@ if ! mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" --silent 2>/dev/null; then
     exit 1
 fi
 
-# 提示输入密码
-echo "请输入MySQL root密码 (如果没有密码请直接按回车):"
-read -s DB_PASSWORD
+# 读取或提示输入密码（支持从环境变量 DB_PASSWORD 传入，便于无交互运行）
+if [ -z "$DB_PASSWORD" ]; then
+    echo "请输入MySQL用户 $DB_USER 的密码 (如果没有密码请直接按回车):"
+    read -s DB_PASSWORD
+fi
 
 # 测试数据库连接
 echo "🔍 测试数据库连接..."
 mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD -e "SELECT 1;" 2>/dev/null
 if [ $? -ne 0 ]; then
-    echo "❌ 数据库连接失败，请检查配置"
+    echo "❌ 数据库连接失败，请检查配置 (用户: $DB_USER)"
     exit 1
 fi
 
@@ -82,34 +84,36 @@ else
     exit 1
 fi
 
-# 创建专用数据库用户（可选）
-echo "是否创建专用数据库用户? [y/N]:"
-read -r CREATE_USER
+# 创建专用数据库用户（可选，可通过环境变量 SKIP_DB_USER_CREATION=true 跳过交互）
+if [ "$SKIP_DB_USER_CREATION" != "true" ]; then
+    echo "是否创建专用数据库用户? [y/N]:"
+    read -r CREATE_USER
 
-if [[ $CREATE_USER =~ ^[Yy]$ ]]; then
-    echo "请输入新用户名 (默认: tax_user):"
-    read -r NEW_USER
-    NEW_USER=${NEW_USER:-tax_user}
-    
-    echo "请输入新用户密码:"
-    read -s NEW_PASSWORD
-    
-    echo "🔐 创建数据库用户 $NEW_USER..."
-    mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD -e "
-        CREATE USER IF NOT EXISTS '$NEW_USER'@'%' IDENTIFIED BY '$NEW_PASSWORD';
-        GRANT SELECT, INSERT, UPDATE, DELETE ON $DB_NAME.* TO '$NEW_USER'@'%';
-        FLUSH PRIVILEGES;
-    "
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ 数据库用户创建成功"
-        echo ""
-        echo "请在 backend/.env 文件中使用以下配置:"
-        echo "DB_USER=$NEW_USER"
-        echo "DB_PASSWORD=$NEW_PASSWORD"
-        echo "DB_NAME=$DB_NAME"
-    else
-        echo "❌ 数据库用户创建失败"
+    if [[ $CREATE_USER =~ ^[Yy]$ ]]; then
+        echo "请输入新用户名 (默认: tax_user):"
+        read -r NEW_USER
+        NEW_USER=${NEW_USER:-tax_user}
+        
+        echo "请输入新用户密码:"
+        read -s NEW_PASSWORD
+        
+        echo "🔐 创建数据库用户 $NEW_USER..."
+        mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD -e "
+            CREATE USER IF NOT EXISTS '$NEW_USER'@'%' IDENTIFIED BY '$NEW_PASSWORD';
+            GRANT SELECT, INSERT, UPDATE, DELETE ON $DB_NAME.* TO '$NEW_USER'@'%';
+            FLUSH PRIVILEGES;
+        "
+        
+        if [ $? -eq 0 ]; then
+            echo "✅ 数据库用户创建成功"
+            echo ""
+            echo "请在 backend/.env 文件中使用以下配置:"
+            echo "DB_USER=$NEW_USER"
+            echo "DB_PASSWORD=$NEW_PASSWORD"
+            echo "DB_NAME=$DB_NAME"
+        else
+            echo "❌ 数据库用户创建失败"
+        fi
     fi
 fi
 

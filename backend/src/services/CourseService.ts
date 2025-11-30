@@ -12,7 +12,8 @@ export class CourseService {
       WHERE c.id = ?
     `;
     const courses = await executeQuery<Course & { teacher_name: string; student_count: number }>(sql, [id]);
-    return courses.length > 0 ? courses[0] : null;
+    // courses[0] 在数组非空时一定存在，这里通过类型断言避免 TS 将其视为可能为 undefined
+    return courses.length > 0 ? (courses[0] as Course) : null;
   }
 
   // 创建课程

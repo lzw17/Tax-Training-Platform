@@ -6,21 +6,21 @@ export class UserService {
   async findByUsername(username: string): Promise<User | null> {
     const sql = 'SELECT * FROM users WHERE username = ?';
     const users = await executeQuery<User>(sql, [username]);
-    return users.length > 0 ? users[0] : null;
+    return users.length > 0 ? users[0] ?? null : null;
   }
 
   // 根据邮箱查找用户
   async findByEmail(email: string): Promise<User | null> {
     const sql = 'SELECT * FROM users WHERE email = ?';
     const users = await executeQuery<User>(sql, [email]);
-    return users.length > 0 ? users[0] : null;
+    return users.length > 0 ? users[0] ?? null : null;
   }
 
   // 根据ID查找用户
   async findById(id: number): Promise<User | null> {
     const sql = 'SELECT * FROM users WHERE id = ?';
     const users = await executeQuery<User>(sql, [id]);
-    return users.length > 0 ? users[0] : null;
+    return users.length > 0 ? users[0] ?? null : null;
   }
 
   // 创建用户
@@ -139,7 +139,7 @@ export class UserService {
     // 获取总数
     const countSql = `SELECT COUNT(*) as total FROM users ${whereClause}`;
     const countResult = await executeQuery<{ total: number }>(countSql, queryParams);
-    const total = countResult[0].total;
+    const total = countResult[0]?.total ?? 0;
 
     // 获取数据
     const dataSql = `
@@ -187,7 +187,7 @@ export class UserService {
       ${whereClause}
     `;
     const countResult = await executeQuery<{ total: number }>(countSql, queryParams);
-    const total = countResult[0].total;
+    const total = countResult[0]?.total ?? 0;
 
     // 获取数据
     const dataSql = `
@@ -241,6 +241,13 @@ export class UserService {
       active_users: number;
     }>(sql);
 
-    return result[0];
+    return (
+      result[0] ?? {
+        total_users: 0,
+        total_teachers: 0,
+        total_students: 0,
+        active_users: 0
+      }
+    );
   }
 }
